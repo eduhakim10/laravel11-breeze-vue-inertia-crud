@@ -1,9 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-
 import CompaniesTable from '@/Components/CompaniesTable.vue'; // Import the CompaniesTable component
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { usePage } from '@inertiajs/vue3'; 
+import { usePage } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3'; // For creating a link to the "Create New Employee" page
 import axios from 'axios'; // Import axios for making HTTP requests
 
@@ -11,50 +10,46 @@ import axios from 'axios'; // Import axios for making HTTP requests
 const companies = ref([]); // Data to store the list of companies
 const loading = ref(false); // Loading state for the table
 const pagination = ref({ current: 1, pageSize: 10, total: 0 }); // Pagination settings
-const showBankPage = ref(false); // Toggle for bank section (if needed)
+const successMessage = ref(null); // Success message from flash
 
 const { props } = usePage(); // Get page props
-console.log(props.flash?.success || null);
-const successMessage = props.flash?.success || null; // Access the success flash message
+successMessage.value = props.flash?.success || null; // Access the success flash message
 
-const fetchCompanies = async (paginationData) => {
+const closeMessage = () => {
+  successMessage.value = null; // Clear the success message
+};
+
+// Fetch companies data from the server
+const fetchCompanies = async (paginationData = pagination.value) => {
   loading.value = true;
 
   try {
     const response = await axios.get('/companies-data', {
       params: {
-        page: paginationData?.current || pagination.value.current,
-        per_page: paginationData?.pageSize || pagination.value.pageSize,
+        page: paginationData.current,
+        per_page: paginationData.pageSize,
       },
     });
+console.log(response.data); 
+    companies.value = response.data.data.map((comp, index) => ({
+      ...comp,
+      index: (paginationData.current - 1) * paginationData.pageSize + index + 1,
+    }));
 
-    companies.value = response.data.companies;
-    pagination.value.total = response.data.total;
-    pagination.value.current = response.data.current_page;
+    pagination.value.total = response.data.meta.total;
+    pagination.value.current = response.data.meta.current_page;
   } catch (error) {
     console.error('Error fetching companies:', error);
   } finally {
     loading.value = false;
   }
 };
-const closeMessage = () => {
-  successMessage.value = null; // Clear the success message
-};
-
-const editCompany = (company) => {
-  console.log('Editing company:', company);
-  // Implement your edit logic here, e.g., open a modal or navigate to an edit page
-};
-
-const deleteCompany = (id) => {
-  companies.value = companies.value.filter(company => company.id !== id);
-  // Call API to delete company (if needed)
-};
 
 onMounted(() => {
-  fetchCompanies(); // Fetch companies on initial mount
+  fetchCompanies(); // Fetch companies when the component is mounted
 });
 </script>
+
 <template>
   <Head title="Companies" />
 
@@ -76,16 +71,15 @@ onMounted(() => {
       </div>
 
       <!-- Success Message Section -->
-        <div v-if="successMessage" class="alert alert-success bg-green-500 text-white p-4 rounded-lg shadow-md mb-6 flex items-center justify-between">
-          <span>{{ successMessage }}</span>
-          <button 
+      <div v-if="successMessage" class="alert alert-success bg-green-500 text-white p-4 rounded-lg shadow-md mb-6 flex items-center justify-between">
+        <span>{{ successMessage }}</span>
+        <button 
           @click="closeMessage"
-            class="text-white bg-transparent hover:bg-green-600 focus:outline-none font-bold rounded-full w-6 h-6 flex justify-center items-center"
-          >
-            ✕
-          </button>
-        </div>
-
+          class="text-white bg-transparent hover:bg-green-600 focus:outline-none font-bold rounded-full w-6 h-6 flex justify-center items-center"
+        >
+          ✕
+        </button>
+      </div>
 
       <!-- Companies Table -->
       <CompaniesTable
@@ -93,16 +87,13 @@ onMounted(() => {
         :loading="loading"
         :pagination="pagination"
         @update-pagination="fetchCompanies"
-        @edit-company="editCompany"
-        @delete-company="deleteCompany"
       />
-
-      <!-- Bank Section (if needed) -->
-      <div v-if="showBankPage" class="mt-8 p-6 bg-gray-100 rounded-lg">
-        <h2 class="text-xl font-semibold text-gray-700">Bank Information</h2>
-        <p class="text-gray-600">This is the bank page content.</p>
-      </div>
     </div>
   </AuthenticatedLayout>
 </template>
 
+<style scoped>
+.company-datatable {
+  padding: 20px;
+}
+</style>

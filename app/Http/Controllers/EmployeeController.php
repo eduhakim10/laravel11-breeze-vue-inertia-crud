@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use App\Models\Company;
+
 
 class EmployeeController extends Controller
 {
@@ -12,8 +15,9 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $employees = Employee::all(); // Fetch employees from the database
-        return Inertia::render('Employees/Index', [
+        $companies = Company::all(); // Fetch companies from the database
+        return Inertia::render('Employee/Index', [
+            'companies' => $companies,
             'flash' =>[
                 'success' => session('success'),
             ]
@@ -26,7 +30,14 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        //
+       
+        $companies = Company::all(); // Fetch companies from the database
+        return Inertia::render('Employee/Create', [
+            'companies' => $companies,
+            'flash' =>[
+               
+            ]
+        ]);
     }
 
     /**
@@ -34,7 +45,17 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'company_id' => 'required|exists:companies,id',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        Employee::create($request->all());
+
+        return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }
 
     /**
@@ -58,7 +79,20 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, Employee $employee)
     {
-        //
+       
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'company_id' => 'required|exists:companies,id',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        // Find the employee by ID and update the fields
+        $employee = Employee::findOrFail($id);
+        $employee->update($request->all());
+
+        return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }
 
     /**

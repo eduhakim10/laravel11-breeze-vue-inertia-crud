@@ -99,6 +99,7 @@ class CompanyController extends Controller
             $logoPath = $request->file('logo')->store('logos', 'public');
         }
 
+        $company = Company::findOrFail($id);
         $company->update($request->all());
 
         return redirect()->route('companies.index')->with('success', 'Company updated successfully.');

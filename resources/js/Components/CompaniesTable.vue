@@ -17,7 +17,39 @@
       <a-button type="danger" @click="deleteCompany(record)">Delete</a-button>
     </template>
   </a-table>
+<!-- Edit Modal -->
+    <a-modal
+      v-model:visible="isEditModalVisible"
+      title="Edit Company"
+      @ok="saveEdit"
+      @cancel="cancelEdit"
+    >
+      <a-form :model="editFormData">
+        <a-form-item label="Name" :rules="[{ required: true, message: 'Name is required' }]">
+          <a-input v-model:value="editFormData.name" />
+        </a-form-item>
+        <a-form-item label="Email">
+          <a-input v-model:value="editFormData.email" />
+        </a-form-item>
+        <a-form-item label="Website">
+          <a-input v-model:value="editFormData.website" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
+
+     <!-- Delete Confirmation Modal -->
+    <a-modal
+      v-model:visible="isDeleteModalVisible"
+      title="Confirm Deletion"
+      @ok="deleteCompany"
+      @cancel="cancelDelete"
+    >
+      <p>Are you sure you want to delete this company?</p>
+    </a-modal>
+
+
 </template>
+
 
 <script>
 import { ref, defineComponent } from 'vue';
@@ -44,6 +76,14 @@ export default defineComponent({
         { title: 'Website', dataIndex: 'website', scopedSlots: { customRender: 'website' } },
         { title: 'Action', dataIndex: 'action', scopedSlots: { customRender: 'action' } },
       ],
+      isEditModalVisible: false, // Controls visibility of the edit modal
+      isDeleteModalVisible: false, // Controls visibility of the delete confirmation modal
+      editFormData: {
+        name: '',
+        email: '',
+        website: '',
+      }, // Form data for the edit modal
+      companyToDelete: null, // Store company data for deletion
     };
   },
   methods: {

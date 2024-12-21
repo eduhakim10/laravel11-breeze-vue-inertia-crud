@@ -37,10 +37,17 @@ Route::middleware([RestrictUserMiddleware::class])->group(function () {
     Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
     Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
     Route::post('/companies/store', [CompanyController::class, 'store'])->name('companies.store');
-    Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
-    Route::get('/employees', [EmployeeController::class, 'index']);
+    Route::put('/companies/{id}', [CompanyController::class, 'update'])->name('companies.update');
+    Route::delete('/companies/{id}', [CompanyController::class, 'destroy'])->name('companies.delete');
 
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+    Route::get('/employees/create', [EmployeeController::class, 'create'])->name('employees.create');
+    Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('employees.update');
+    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
+
+    //datatables api
     Route::get('/companies-data', [CompanyController::class, 'datatables']);
+    Route::get('/employees-data', [EmployeeController::class, 'datatables']);
 
 });
 require __DIR__.'/auth.php';
