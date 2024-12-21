@@ -6,6 +6,8 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Company;
+use App\Http\Requests\StoreEmployeeRequest;
+use App\Notifications\EmployeeCreated;
 
 
 class EmployeeController extends Controller
@@ -43,17 +45,13 @@ class EmployeeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCompanyRequest $request)
     {
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'company_id' => 'required|exists:companies,id',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
-        ]);
+        $validatedData = $request->validated();  
+        Employee::create($validatedData);
 
-        Employee::create($request->all());
+        $company = Company::find($employee->company_id);
+        $company->user->notify(new EmployeeCreated($employee, $company));
 
         return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }

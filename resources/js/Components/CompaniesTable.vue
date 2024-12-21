@@ -92,11 +92,34 @@ export default defineComponent({
       this.$emit('update-pagination', pagination);
     },
     editCompany(record) {
-      // Handle edit functionality here
+       this.editFormData = { ...record };
+      this.isEditModalVisible = true;
     },
     deleteCompany(record) {
-      // Handle delete functionality here
+      if (this.companyToDelete) {
+        // Emit event to parent to handle deletion
+        this.$emit('delete-company', this.companyToDelete);
+      }
+      this.isDeleteModalVisible = false;
+      
     },
+    async updateCompany(updatedCompany) {
+      try {
+        await axios.put(`/companies/${updatedCompany.id}`, updatedCompany);
+        this.fetchCompanies(); // Refresh the table data
+      } catch (error) {
+        console.error('Failed to update company:', error);
+      }
+    },
+    async deleteCompany(company) {
+      try {
+        await axios.delete(`/companies/${company.id}`);
+        this.fetchCompanies(); // Refresh the table data
+      } catch (error) {
+        console.error('Failed to delete company:', error);
+      }
+    },
+
   },
 });
 </script>

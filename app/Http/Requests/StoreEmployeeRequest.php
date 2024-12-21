@@ -4,17 +4,15 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCompanyRequest extends FormRequest
+class StoreEmployeeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        // Replace this logic with your own role or permission checks
         return auth()->check() && in_array(auth()->user()->email, ['admin@grtech.com', 'user@grtech.com']);
     }
-    
 
     /**
      * Get the validation rules that apply to the request.
@@ -24,10 +22,11 @@ class StoreCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
-            'website' => 'nullable|url',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'company_id' => 'required|exists:companies,id',
+            'email' => 'nullable|email|unique:employees,email',
+            'phone' => 'nullable|string|max:20',
         ];
     }
 }
