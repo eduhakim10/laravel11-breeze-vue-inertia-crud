@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Models\Company;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Notifications\EmployeeCreated;
+use App\Http\Resources\EmployeeResource;
 
 
 class EmployeeController extends Controller
@@ -45,7 +46,7 @@ class EmployeeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCompanyRequest $request)
+    public function store(StoreEmployeeRequest $request)
     {
         $validatedData = $request->validated();  
         Employee::create($validatedData);
@@ -70,6 +71,13 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         //
+    }
+
+    public function datatables(Request $request){
+
+        $employees = Employee::paginate(10);
+        return EmployeeResource::collection($companies);
+    
     }
 
     /**

@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Resources\CompanyResource;
 
+use Illuminate\Support\Facades\DB; 
 
 class CompanyController extends Controller
 {
@@ -86,32 +87,61 @@ class CompanyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Company $company)
+    public function update(StoreCompanyRequest $request,  $id)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'nullable|email',
-            'website' => 'nullable|url',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            
-        ]);
-        if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('logos', 'public');
+ 
+        $company = Company::find($id);
+        if (!$company) {
+            return response()->json(['message' => 'Company not found.'], 404);
         }
+        $validated= $request->validated(); 
+       
+        if ($request->hasFile('logo')) {
+            // Delete the old logo if it exists
+            if ($company->logo && \Storage::disk('public')->exists($company->logo)) {
+                \Storage::disk('public')->delete($company->logo);
+            }
+    
+            // Store the new logo
+            $logoPath = $request->file('logo')->store('logos', 'public');
+            $validated['logo'] = $logoPath; // Add the logo path to the validated data
+        }
+       
+    
+        // Save the updated company
+       // $company->save();
+       $company->update($validated);
 
-        $company = Company::findOrFail($id);
-        $company->update($request->all());
 
-        return redirect()->route('companies.index')->with('success', 'Company updated successfully.');
+            // Return the updated company data with a success message
+            return response()->json([
+                'message' => 'Company updated successfully.',
+                'company' => $company, // Return the updated company data
+            ]);
+       
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Company $company)
+    public function destroy($id)
     {
-        $company->delete();
-
-        return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
+        try {
+            $company = Company::findOrFail($id);
+            // Delete the company
+            $company->delete();
+    
+            // Return success response
+            return response()->json([
+                'message' => 'Company deleted successfully.',
+            ], 200); // HTTP 200 OK
+        } catch (\Exception $e) {
+            // Handle any potential errors
+            return response()->json([
+                'message' => 'Failed to delete the company.',
+                'error' => $e->getMessage(),
+            ], 500); // HTTP 500 Internal Server Error
+        }
+       // return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
     }
 }

@@ -1,12 +1,14 @@
 <script setup>
 import { ref } from 'vue';
+import { Head,Link } from '@inertiajs/inertia-vue3'; // Import Link
 import { Inertia } from '@inertiajs/inertia'; // For submitting form data
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 // Form fields and file input state
-const first_name = ref('');
-const last_name = ref('');
-const phone = ref('');
+const employeeFirstname = ref('');
+const employeeLastname = ref('');
+const employeePhone = ref('');
+const employeeEmail = ref('');
 const company_id = ref(null);
 const props = defineProps({
   companies: Array,
@@ -17,32 +19,20 @@ const companyData = ref({
   company_id: null, // Initialize with null
 });
 
-// Handle file input change (for logo upload)
-const handleFileChange = (event) => {
-  companyLogo.value = event.target.files[0]; // Store the selected file
-};
-
 // Submit the form with FormData (including the file)
 const submitForm = () => {
   const formData = new FormData();
-  formData.append('first_namename', employeeFirstname.value);
+  formData.append('first_name', employeeFirstname.value);
   formData.append('last_name', employeeLastname.value);
-  formData.append('company_id', employeeCompanyid.value);
+  formData.append('company_id', company_id.value);
   formData.append('phone', employeePhone.value);
    formData.append('email', employeeEmail.value);
 
-
- if (companyLogo.value) {
-    formData.append('logo', companyLogo.value);
-  }
-  // Log the name and email to verify the values
-  
-
   // Send data using Inertia.js
-  Inertia.post('/companies', formData, {
+  Inertia.post('/employees', formData, {
       onSuccess: () => {
         // Redirect to the index route after success
-        Inertia.visit(route('companies.index'));
+        Inertia.visit(route('employees.index'));
       },
       onError: (errors) => {
         alert('Error creating company');
@@ -66,7 +56,7 @@ const submitForm = () => {
   <div class="max-w-lg mx-auto p-6 bg-white shadow-md rounded-md form-companies">
     <h1 class="text-2xl font-semibold mb-4">Create Employee</h1>
 
-    <!-- Form to create a company -->
+    <!-- Form to create a employee -->
     <form @submit.prevent="submitForm">
       <!-- Employee Name -->
       <div class="mb-4">

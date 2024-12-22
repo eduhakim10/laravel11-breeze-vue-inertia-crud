@@ -11,13 +11,25 @@ const companies = ref([]); // Data to store the list of companies
 const loading = ref(false); // Loading state for the table
 const pagination = ref({ current: 1, pageSize: 10, total: 0 }); // Pagination settings
 const successMessage = ref(null); // Success message from flash
-
+const generalErrorMessage = ref(null); // General backend error message
+const formErrors = ref({}); // Object to hold field-specific errors
+const errorMessage = ref(null); 
 const { props } = usePage(); // Get page props
 successMessage.value = props.flash?.success || null; // Access the success flash message
 
 const closeMessage = () => {
   successMessage.value = null; // Clear the success message
 };
+
+
+// Modal management
+const isEditModalVisible = ref(false);
+const editFormData = ref({
+  id: null,
+  name: '',
+  email: '',
+  website: '',
+});
 
 // Fetch companies data from the server
 const fetchCompanies = async (paginationData = pagination.value) => {
@@ -30,7 +42,7 @@ const fetchCompanies = async (paginationData = pagination.value) => {
         per_page: paginationData.pageSize,
       },
     });
-console.log(response.data); 
+
     companies.value = response.data.data.map((comp, index) => ({
       ...comp,
       index: (paginationData.current - 1) * paginationData.pageSize + index + 1,
@@ -44,7 +56,69 @@ console.log(response.data);
     loading.value = false;
   }
 };
+// Handle edit button click
+const handleEditCompany = (record) => {
 
+  editFormData.value = { ...record }; // Copy data into the form
+  isEditModalVisible.value = true; // Show the modal
+  console.log(isEditModalVisible)
+
+};
+
+// Close the edit modal
+const cancelEdit = () => {
+  isEditModalVisible.value = false;
+};
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    editFormData.value.logo = file;
+    console.log('File selected:', file);  // Log the file object to confirm it
+  } else {
+    console.log('No file selected');
+  }
+};
+const saveEdit = async () => {
+
+      const formData = new FormData();
+
+// Append other fields to the FormData object
+        formData.append('_method', 'PUT'); // Simulate a PUT request
+        formData.append('name', editFormData.value.name);
+        formData.append('email', editFormData.value.email);
+        formData.append('website', editFormData.value.website);
+
+        // Append the logo file if available
+        if (editFormData.value.logo && editFormData.value.logo instanceof File) {
+          formData.append('logo', editFormData.value.logo);
+        } else {
+          console.log('No valid logo file found');
+        }
+
+
+        // Send the PUT request to update the company
+        try {
+            const response = await axios.post(`/companies/${editFormData.value.id}`, formData, {
+                  headers: {
+                  'Content-Type': 'multipart/form-data',
+              },
+            });
+
+            successMessage.value = response.data.message;
+
+            // Close the modal after successful update
+            isEditModalVisible.value = false;
+            fetchCompanies();
+        } catch (error) {
+          
+            if (error.response && error.response.data && error.response.data.errors) {
+                formErrors.value = error.response.data.errors;
+              } else {
+                console.error('Unexpected error:', error);
+              }
+        }
+       
+};
 onMounted(() => {
   fetchCompanies(); // Fetch companies when the component is mounted
 });
@@ -86,8 +160,41 @@ onMounted(() => {
         :companies="companies"
         :loading="loading"
         :pagination="pagination"
+        @edit-company="handleEditCompany"
         @update-pagination="fetchCompanies"
+        
       />
+       <!-- Edit Modal -->
+       <a-modal
+        v-model:visible="isEditModalVisible"
+        title="Edit Company"
+        @ok="saveEdit"
+        @cancel="cancelEdit"
+      >
+        <a-form :model="editFormData" ref="formRef">
+          <a-form-item 
+            label="Name" 
+            :rules="[{ required: true, message: 'Name is required' }]" 
+            :help="formErrors.name"
+          >
+            <a-input v-model:value="editFormData.name" />
+          </a-form-item>
+          
+          <a-form-item label="Email" :help="formErrors.email">
+            <a-input v-model:value="editFormData.email" />
+          </a-form-item>
+          
+          <a-form-item label="Website" :help="formErrors.website">
+            <a-input v-model:value="editFormData.website" />
+          </a-form-item>
+
+          <!-- Logo Upload -->
+          <a-form-item label="Logo" :help="formErrors.logo">
+            <a-input type="file" @change="handleFileChange" />
+          </a-form-item>
+        </a-form>
+      </a-modal>
+
     </div>
   </AuthenticatedLayout>
 </template>
@@ -95,5 +202,12 @@ onMounted(() => {
 <style scoped>
 .company-datatable {
   padding: 20px;
+}
+.a-modal {
+  z-index: 9999 !important;
+  position: fixed !important;
+}
+.ant-form-item-explain {
+  color: red !important;
 }
 </style>

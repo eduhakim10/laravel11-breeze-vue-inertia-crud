@@ -55,26 +55,26 @@ export default defineComponent({
       this.isEditModalVisible = true;
     },
     deleteemployee(record) {
-      if (this.companyToDelete) {
+      if (this.employeeToDelete) {
         // Emit event to parent to handle deletion
         this.$emit('delete-employees', this.employeeToDelete);
       }
       this.isDeleteModalVisible = false;
     },
-     async updateCompany(updatedCompany) {
+     async updatedEmployee(updatedEmployee) {
       try {
-        await axios.put(`/employees/${updatedCompany.id}`, updatedCompany);
+        await axios.put(`/employees/${updatedEmployee.id}`, updatedEmployee);
         this.fetchCompanies(); // Refresh the table data
       } catch (error) {
-        console.error('Failed to update company:', error);
+        console.error('Failed to update employee:', error);
       }
     },
-    async deleteCompany(company) {
+    async deleteemployee(employee) {
       try {
-        await axios.delete(`/employees/${company.id}`);
+        await axios.delete(`/employees/${employee.id}`);
         this.fetchCompanies(); // Refresh the table data
       } catch (error) {
-        console.error('Failed to delete company:', error);
+        console.error('Failed to delete employee:', error);
       }
     },
 

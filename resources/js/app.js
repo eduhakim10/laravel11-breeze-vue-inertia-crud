@@ -25,6 +25,7 @@ createInertiaApp({
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(Antd) // Add Ant Design Vue here
             .mount(el);
     },
     progress: {

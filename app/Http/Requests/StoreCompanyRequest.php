@@ -24,10 +24,22 @@ class StoreCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
+            'name' => 'required|string|max:255|unique:companies,name',
+            'email' => 'nullable|email|unique:companies,email',
             'website' => 'nullable|url',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ];   
+    }
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'The name field is required.',
+            'name.unique' => 'The company name has already been taken.',
+            'email.unique' => 'The email address is already registered.',
+            'email.email' => 'Please enter a valid email address.',
+            'logo.image' => 'The logo must be an image.',
+            'logo.mimes' => 'The logo must be a file of type: jpeg, png, jpg, gif.',
+            'logo.max' => 'The logo may not be greater than 2MB.',
         ];
     }
 }

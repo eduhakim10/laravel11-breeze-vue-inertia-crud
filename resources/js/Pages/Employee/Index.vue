@@ -11,7 +11,7 @@ import axios from 'axios'; // Import axios for making HTTP requests
 const Employees = ref([]); // Data to store the list of Employees
 const loading = ref(false); // Loading state for the table
 const pagination = ref({ current: 1, pageSize: 10, total: 0 }); // Pagination settings
-const showBankPage = ref(false); // Toggle for bank section (if needed)
+
 
 const { props } = usePage(); // Get page props
 console.log(props.flash?.success || null);
@@ -41,15 +41,6 @@ const closeMessage = () => {
   successMessage.value = null; // Clear the success message
 };
 
-const editemployee = (employee) => {
-  console.log('Editing employee:', employee);
-  // Implement your edit logic here, e.g., open a modal or navigate to an edit page
-};
-
-const deleteemployee = (id) => {
-  employees.value = employees.value.filter(employee => employee.id !== id);
-  // Call API to delete employee (if needed)
-};
 
 onMounted(() => {
   fetchemployees(); // Fetch employees on initial mount
