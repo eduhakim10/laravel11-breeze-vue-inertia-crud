@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from 'vue';
-import { Head,Link } from '@inertiajs/inertia-vue3'; // Import Link
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Inertia } from '@inertiajs/inertia'; // For submitting form data
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+
+
 
 // Form fields and file input state
 const employeeFirstname = ref('');
@@ -29,7 +31,7 @@ const submitForm = () => {
    formData.append('email', employeeEmail.value);
 
   // Send data using Inertia.js
-  Inertia.post('/employees', formData, {
+  Inertia.post(route('employees.store'), formData, {
       onSuccess: () => {
         // Redirect to the index route after success
         Inertia.visit(route('employees.index'));
@@ -94,10 +96,10 @@ const submitForm = () => {
 
       <!-- Employee Phone -->
       <div class="mb-4">
-        <label for="website" class="block text-sm font-medium text-gray-700">Phone</label>
+        <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
         <input
-          type="url"
-          id="website"
+          type="text"
+          id="phone"
           v-model="employeePhone"
           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
         />

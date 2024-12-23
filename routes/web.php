@@ -35,7 +35,6 @@ Route::middleware('auth')->group(function () {
 Route::middleware([RestrictUserMiddleware::class])->group(function () {
     Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
     Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
-    Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
     Route::post('/companies/store', [CompanyController::class, 'store'])->name('companies.store');
     Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/{id}', [CompanyController::class, 'destroy'])->name('companies.delete');

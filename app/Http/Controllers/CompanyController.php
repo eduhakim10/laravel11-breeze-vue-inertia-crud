@@ -32,7 +32,7 @@ class CompanyController extends Controller
 
     public function datatables(Request $request){
 
-        $companies = Company::paginate(10);
+        $companies = Company::orderBy('created_at', 'desc')->paginate(10);
         return CompanyResource::collection($companies);
     
     }
@@ -42,9 +42,10 @@ class CompanyController extends Controller
      */
     public function create()
     {
-      //  dd(auth()->user()->email);
-
-        return Inertia::render('Company/Create');
+    
+        return Inertia::render('Company/Create', [
+            'errors' => session('errors') ? session('errors')->getBag('default')->getMessages() : [],
+        ]);
     }
 
     /**
@@ -59,9 +60,16 @@ class CompanyController extends Controller
             $validatedData['logo'] = $request->file('logo')->store('logos', 'public');
         }
         // Create company record
-        Company::create($validatedData);
-  
-        return redirect()->route('companies.index')->with('success', 'Company created successfully.');
+     
+        try {
+            $company = Company::create($validatedData);
+    
+            // Redirect to the index page with a success message
+            return redirect()->route('companies.index')->with('success', 'Company created successfully!');
+        } catch (\Exception $e) {
+            return Inertia::back()->withErrors(['general' => 'An error occurred while creating the company.']);
+        }
+      //  return redirect()->route('companies.index')->with('success', 'Company created successfully.');
 
 
     }
@@ -79,9 +87,7 @@ class CompanyController extends Controller
      */
     public function edit(Company $company)
     {
-        return Inertia::render('Companies/Edit', [
-            'company' => $company,
-        ]);
+       
     }
 
     /**
@@ -142,6 +148,6 @@ class CompanyController extends Controller
                 'error' => $e->getMessage(),
             ], 500); // HTTP 500 Internal Server Error
         }
-       // return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
+       
     }
 }

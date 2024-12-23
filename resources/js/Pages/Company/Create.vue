@@ -2,6 +2,11 @@
 import { ref } from 'vue';
 import { Inertia } from '@inertiajs/inertia'; // For submitting form data
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+
+
+const { props } = usePage(); // Access Inertia props
+const errors = props.errors || {}; // Extract errors
 
 // Form fields and file input state
 const companyName = ref('');
@@ -29,13 +34,13 @@ const submitForm = () => {
   
 
   // Send data using Inertia.js
-  Inertia.post('/companies', formData, {
+  Inertia.post(route('companies.store'), formData, {
       onSuccess: () => {
-        // Redirect to the index route after success
+        // Redirect to the index route after success 
         Inertia.visit(route('companies.index'));
       },
       onError: (errors) => {
-        alert('Error creating company');
+    
         console.error(errors);
       },
     });
@@ -68,6 +73,8 @@ const submitForm = () => {
           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
           required
         />
+        <!-- Show validation error -->
+        <p v-if="errors.name" class="text-red-600 text-sm mt-1">{{ errors.name[0] }}</p>
       </div>
 
       <!-- Company Email -->
@@ -79,6 +86,8 @@ const submitForm = () => {
           v-model="companyEmail"
           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
         />
+         <!-- Show validation error -->
+         <p v-if="errors.email" class="text-red-600 text-sm mt-1">{{ errors.email[0] }}</p>
       </div>
 
       <!-- Company Website -->
@@ -101,6 +110,8 @@ const submitForm = () => {
           @change="handleFileChange"
           class="mt-1 block w-full"
         />
+         <!-- Show validation error -->
+         <p v-if="errors.logo" class="text-red-600 text-sm mt-1">{{ errors.logo[0] }}</p>
         <!-- Show selected file name -->
         <p v-if="companyLogo" class="mt-2 text-sm text-gray-600">{{ companyLogo.name }}</p>
       </div>

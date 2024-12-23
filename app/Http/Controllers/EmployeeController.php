@@ -37,10 +37,9 @@ class EmployeeController extends Controller
         $companies = Company::all(); // Fetch companies from the database
         return Inertia::render('Employee/Create', [
             'companies' => $companies,
-            'flash' =>[
-               
-            ]
+            'errors' => session('errors') ? session('errors')->getBag('default')->getMessages() : [],
         ]);
+      
     }
 
     /**
@@ -51,10 +50,17 @@ class EmployeeController extends Controller
         $validatedData = $request->validated();  
         Employee::create($validatedData);
 
-        $company = Company::find($employee->company_id);
-        $company->user->notify(new EmployeeCreated($employee, $company));
+       
+     //   $company->user->notify(new EmployeeCreated($employee, $company));
+        try {
+            $employees = Employee::create($validatedData);
 
-        return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
+            // Redirect to the index page with a success message
+            return redirect()->route('employees.index')->with('success', 'Employee created successfully!');
+        } catch (\Exception $e) {
+            return Inertia::back()->withErrors(['general' => 'An error occurred while creating the company.']);
+        }
+       // return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }
 
     /**
@@ -75,30 +81,26 @@ class EmployeeController extends Controller
 
     public function datatables(Request $request){
 
-        $employees = Employee::paginate(10);
-        return EmployeeResource::collection($companies);
+        $employees = Employee::orderBy('created_at', 'desc')->paginate(10);
+        return EmployeeResource::collection($employees);
     
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Employee $employee)
+    public function update(StoreEmployeeRequest $request, $id)
     {
-       
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'company_id' => 'required|exists:companies,id',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+        $employees = Employee::find($id);
+        if (!$employees) {
+            return response()->json(['message' => 'Employee not found.'], 404);
+        }
+        $validated= $request->validated(); 
+
+        return response()->json([
+            'message' => 'Company updated successfully.',
+            'company' => $employees, // Return the updated company data
         ]);
-
-        // Find the employee by ID and update the fields
-        $employee = Employee::findOrFail($id);
-        $employee->update($request->all());
-
-        return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }
 
     /**
@@ -106,9 +108,23 @@ class EmployeeController extends Controller
      */
     public function destroy(Employee $employee)
     {
-        //
-        $employee->delete();
-        return redirect()->route('employees.index');
+
+        try {
+            $employees = Employee::findOrFail($id);
+            // Delete the company
+            $employees->delete();
+    
+            // Return success response
+            return response()->json([
+                'message' => 'Employee deleted successfully.',
+            ], 200); // HTTP 200 OK
+        } catch (\Exception $e) {
+            // Handle any potential errors
+            return response()->json([
+                'message' => 'Employee to delete the company.',
+                'error' => $e->getMessage(),
+            ], 500); // HTTP 500 Internal Server Error
+        }
 
     }
 }
