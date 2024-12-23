@@ -15,7 +15,9 @@ const company_id = ref(null);
 const props = defineProps({
   companies: Array,
 });
-
+const { errors } = usePage().props;
+  console.log(errors); 
+  
 // Reactive data for company selection
 const companyData = ref({
   company_id: null, // Initialize with null
@@ -34,7 +36,8 @@ const submitForm = () => {
   Inertia.post(route('employees.store'), formData, {
       onSuccess: () => {
         // Redirect to the index route after success
-        Inertia.visit(route('employees.index'));
+      //  Inertia.visit(route('employees.index'));
+      console.log('Employee created successfully!');
       },
       onError: (errors) => {
         alert('Error creating company');
@@ -60,6 +63,16 @@ const submitForm = () => {
 
     <!-- Form to create a employee -->
     <form @submit.prevent="submitForm">
+      <div v-if="errors && Object.keys(errors).length" class="text-red-500 text-sm">
+  <ul>
+    <li v-for="(error, field) in errors" :key="field">
+      {{ field }}: {{ error }}
+    </li>
+  </ul>
+</div>
+
+
+
       <!-- Employee Name -->
       <div class="mb-4">
         <label for="name" class="block text-sm font-medium text-gray-700">First Name</label>
@@ -70,6 +83,7 @@ const submitForm = () => {
           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
           required
         />
+       
       </div>
 
        <div class="mb-4">
@@ -81,6 +95,7 @@ const submitForm = () => {
           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
           required
         />
+      
       </div>
 
       <!-- Employee Email -->
@@ -92,6 +107,7 @@ const submitForm = () => {
           v-model="employeeEmail"
           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
         />
+       
       </div>
 
       <!-- Employee Phone -->
@@ -103,15 +119,17 @@ const submitForm = () => {
           v-model="employeePhone"
           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
         />
+        
       </div>
 
       <!-- Employee Company -->
       <a-form-item label="Company" :rules="[{ required: true, message: 'Company is required' }]">
-        <a-select v-model:value="companyData.company_id" placeholder="Select Company">
+        <a-select v-model:value="company_id" placeholder="Select Company">
           <a-select-option v-for="company in companies" :key="company.id" :value="company.id">
             {{ company.name }}
           </a-select-option>
         </a-select>
+
       </a-form-item>
 
       <!-- Submit Button -->

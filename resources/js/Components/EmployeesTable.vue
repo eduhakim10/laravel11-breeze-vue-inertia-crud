@@ -5,18 +5,23 @@
     :pagination="pagination"
     :loading="loading"
     @change="handleTableChange"
+   
   >
-    <template #logo="{ record }">
-      <img :src="record.logo" alt="Logo" class="w-10 h-10 object-cover" />
-    </template>
-    <template #website="{ record }">
-      <a :href="record.website" target="_blank">{{ record.website }}</a>
-    </template>
-    <template #action="{ record }">
-      <a-button @click="editemployee(record)">Edit</a-button>
-      <a-button type="danger" @click="deleteemployee(record)">Delete</a-button>
+   <!-- Action Column Slot -->
+   <template #action="{ record }">
+      <a-button type="primary" @click="$emit('edit-employee', record)">Edit</a-button>
+      <a-button type="danger" @click="confirmDelete(record)">Delete</a-button>
     </template>
   </a-table>
+ <!-- Delete Confirmation Modal -->
+ <a-modal
+    v-model:visible="isDeleteModalVisible"
+    title="Confirm Deletion"
+    @ok="performDelete"
+    @cancel="cancelDelete"
+  >
+    <p>Are you sure you want to delete this company?</p>
+  </a-modal>
 </template>
 
 <script>
@@ -38,11 +43,15 @@ export default defineComponent({
     return {
       columns: [
         { title: 'Index', dataIndex: 'index' },
-        { title: 'Name', dataIndex: 'name' },
+        { title: 'First Name', dataIndex: 'first_name' },
+        { title: 'Last Name', dataIndex: 'last_name' },
         { title: 'Email', dataIndex: 'email' },
-        { title: 'Phone', dataIndex: 'phone', scopedSlots: { customRender: 'phone' } },
-        { title: 'Action', dataIndex: 'action', scopedSlots: { customRender: 'action' } },
+        { title: 'Phone', dataIndex: 'phone' },
+        { title: 'Action', dataIndex: 'action', slots: { customRender: 'action' } },
       ],
+      isEditModalVisible: false, // Controls visibility of the edit modal
+      isDeleteModalVisible: false, // Controls visibility of the delete confirmation modal
+      companyToDelete: null, // Store company data for deletion
     };
   },
   methods: {
@@ -50,32 +59,30 @@ export default defineComponent({
       // Handle pagination, sorting, etc. and emit event back to the parent component
       this.$emit('update-pagination', pagination);
     },
-    editemployee(record) {
-      this.editFormData = { ...record };
-      this.isEditModalVisible = true;
+    confirmDelete(record) {
+      this.companyToDelete = record;
+      this.isDeleteModalVisible = true;
     },
-    deleteemployee(record) {
-      if (this.employeeToDelete) {
-        // Emit event to parent to handle deletion
-        this.$emit('delete-employees', this.employeeToDelete);
+  
+    performDelete() {
+      if (this.companyToDelete) {
+        this.deleteCompany(this.companyToDelete);
       }
       this.isDeleteModalVisible = false;
+      this.companyToDelete = null;
     },
-     async updatedEmployee(updatedEmployee) {
+    async deleteCompany(company) {
+
       try {
-        await axios.put(`/employees/${updatedEmployee.id}`, updatedEmployee);
-        this.fetchCompanies(); // Refresh the table data
+        await axios.delete(`/companies/${company.id}`);
+        this.$emit('update-pagination'); // Notify the parent to refresh the data
       } catch (error) {
-        console.error('Failed to update employee:', error);
+        console.error('Failed to delete company:', error);
       }
     },
-    async deleteemployee(employee) {
-      try {
-        await axios.delete(`/employees/${employee.id}`);
-        this.fetchCompanies(); // Refresh the table data
-      } catch (error) {
-        console.error('Failed to delete employee:', error);
-      }
+    cancelDelete() {
+      this.isDeleteModalVisible = false;
+      this.companyToDelete = null;
     },
 
     

@@ -4,35 +4,57 @@ import { ref, onMounted } from 'vue';
 import EmployeesTable from '@/Components/EmployeesTable.vue'; // Import the EmployeesTable component
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { usePage } from '@inertiajs/vue3'; 
-import { Link } from '@inertiajs/vue3'; // For creating a link to the "Create New Employee" page
+import { Head, Link } from '@inertiajs/vue3'; // For creating a link to the "Create New Employee" page
 import axios from 'axios'; // Import axios for making HTTP requests
 
 // Define data and properties
-const Employees = ref([]); // Data to store the list of Employees
+const employees = ref([]); // Data to store the list of Employees
 const loading = ref(false); // Loading state for the table
 const pagination = ref({ current: 1, pageSize: 10, total: 0 }); // Pagination settings
+const formErrors = ref({}); 
+const isEditModalVisible = ref(false);
+const editFormData = ref({
+  id: null,
+  first_name: '',
+  last_name: '',
+  email: '',
+  phone: '',
+  company_id: '',
+});
 
 
 const { props } = usePage(); // Get page props
 console.log(props.flash?.success || null);
 const successMessage = props.flash?.success || null; // Access the success flash message
+// Handle edit button click
 
-const fetchemployees = async (paginationData) => {
+const handleEditEmployee = (record) => {
+
+editFormData.value = { ...record }; // Copy data into the form
+isEditModalVisible.value = true; // Show the modal
+console.log(isEditModalVisible)
+
+};
+const fetchEmployees = async (paginationData = pagination.value) => {
   loading.value = true;
 
   try {
-    const response = await axios.get('/Employees-data', {
+    const response = await axios.get('/employees-data', {
       params: {
-        page: paginationData?.current || pagination.value.current,
-        per_page: paginationData?.pageSize || pagination.value.pageSize,
+        page: paginationData.current,
+        per_page: paginationData.pageSize,
       },
     });
 
-    Employees.value = response.data.Employees;
-    pagination.value.total = response.data.total;
-    pagination.value.current = response.data.current_page;
+    employees.value = response.data.data.map((comp, index) => ({
+      ...comp,
+      index: (paginationData.current - 1) * paginationData.pageSize + index + 1,
+    }));
+
+    pagination.value.total = response.data.meta.total;
+    pagination.value.current = response.data.meta.current_page;
   } catch (error) {
-    console.error('Error fetching Employees:', error);
+    console.error('Error fetching employees:', error);
   } finally {
     loading.value = false;
   }
@@ -43,7 +65,7 @@ const closeMessage = () => {
 
 
 onMounted(() => {
-  fetchemployees(); // Fetch employees on initial mount
+  fetchEmployees(); // Fetch employees on initial mount
 });
 </script>
 <template>
@@ -80,14 +102,65 @@ onMounted(() => {
 
       <!-- Employees Table -->
       <EmployeesTable
-        :Employees="Employees"
+        :employees="employees"
         :loading="loading"
         :pagination="pagination"
         @update-pagination="fetchEmployees"
-        @edit-employee="editemployee"
-        @delete-employee="deleteemployee"
+        @edit-employee="handleEditEmployee"
+      
       />
+ <!-- Edit Modal -->
+    <a-modal
+        v-model:visible="isEditModalVisible"
+        title="Edit Company"
+        @ok="saveEdit"
+        @cancel="cancelEdit"
+      >
+        <a-form :model="editFormData" ref="formRef">
+          <a-form-item 
+            label="First Name" 
+            :rules="[{ required: true, message: 'First Name is required' }]" 
+            :help="formErrors.first_name"
+          >
+            <a-input v-model:value="editFormData.first_name" />
+          </a-form-item>
+          <a-form-item 
+            label="Last Name" 
+            :rules="[{ required: true, message: 'Last Name is required' }]" 
+            :help="formErrors.last_name"
+          >
+            <a-input v-model:value="editFormData.last_name" />
+          </a-form-item>
+          
+          <a-form-item label="Email" :help="formErrors.email">
+            <a-input v-model:value="editFormData.email" />
+          </a-form-item>
+          
+          <a-form-item label="Phone" :help="formErrors.phone">
+            <a-input v-model:value="editFormData.phone" />
+          </a-form-item>
 
+         <!-- Company Selection -->
+        <a-form-item
+          label="Company"
+          :rules="[{ required: true, message: 'Please select a company' }]"
+          :help="formErrors.company_id"
+        >
+          <a-select
+            v-model:value="editFormData.company_id"
+            placeholder="Select a company"
+          >
+            <a-select-option
+              v-for="company in companies"
+              :key="company.id"
+              :value="company.id"
+            >
+              {{ company.name }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        </a-form>
+      </a-modal>
 
     </div>
   </AuthenticatedLayout>

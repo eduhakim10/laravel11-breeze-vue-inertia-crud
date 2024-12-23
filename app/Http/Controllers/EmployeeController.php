@@ -33,7 +33,8 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-       
+        // print_r($request->all());
+        // die;
         $companies = Company::all(); // Fetch companies from the database
         return Inertia::render('Employee/Create', [
             'companies' => $companies,
@@ -46,22 +47,21 @@ class EmployeeController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(StoreEmployeeRequest $request)
-    {
+{
+   
+
+    try {
         $validatedData = $request->validated();  
         Employee::create($validatedData);
 
-       
-     //   $company->user->notify(new EmployeeCreated($employee, $company));
-        try {
-            $employees = Employee::create($validatedData);
-
-            // Redirect to the index page with a success message
-            return redirect()->route('employees.index')->with('success', 'Employee created successfully!');
-        } catch (\Exception $e) {
-            return Inertia::back()->withErrors(['general' => 'An error occurred while creating the company.']);
-        }
-       // return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
+        // Redirect to the index page with a success message
+        return redirect()->route('employees.index')->with('success', 'Employee created successfully!');
+    } catch (\Exception $e) {
+        // Return error back to Inertia
+        return back()->withErrors(['general_error' => 'An error occurred while creating the employee.']);
     }
+}
+
 
     /**
      * Display the specified resource.
@@ -81,7 +81,7 @@ class EmployeeController extends Controller
 
     public function datatables(Request $request){
 
-        $employees = Employee::orderBy('created_at', 'desc')->paginate(10);
+        $employees = Employee::with('company')->orderBy('created_at', 'desc')->paginate(10);
         return EmployeeResource::collection($employees);
     
     }
