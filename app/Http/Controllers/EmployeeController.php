@@ -54,6 +54,13 @@ class EmployeeController extends Controller
             $validatedData = $request->validated();  
             Employee::create($validatedData);
 
+            // Get the company associated with the employee
+            // $company = Company::find($validated['company_id']);
+
+            // // // Send notification to the company
+            // if ($company && $company->email) {
+            //     $company->notify(new EmployeeCreated($employee));
+            // }
             // Redirect to the index page with a success message
             return redirect()->route('employees.index')->with('success', 'Employee created successfully!');
         } catch (\Exception $e) {
@@ -106,7 +113,7 @@ class EmployeeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Employee $employee)
+    public function destroy($id)
     {
 
         try {
@@ -121,7 +128,7 @@ class EmployeeController extends Controller
         } catch (\Exception $e) {
             // Handle any potential errors
             return response()->json([
-                'message' => 'Employee to delete the company.',
+                'message' => 'Failed delete the company.',
                 'error' => $e->getMessage(),
             ], 500); // HTTP 500 Internal Server Error
         }

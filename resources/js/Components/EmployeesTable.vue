@@ -4,6 +4,7 @@
     :data-source="employees"
     :pagination="pagination"
     :loading="loading"
+    :row-key="record => record.id"
     @change="handleTableChange"
    
   >
@@ -11,6 +12,15 @@
    <template #action="{ record }">
       <a-button type="primary" @click="$emit('edit-employee', record)">Edit</a-button>
       <a-button type="danger" @click="confirmDelete(record)">Delete</a-button>
+    </template>
+    <!-- Expanded Row Slot -->
+    <template #expandedRowRender="{ record }">
+      <div>
+        <p><strong>Company Name:</strong> {{ record.company.name }}</p>
+        <p><strong>Company Email:</strong> {{ record.company.email }}</p>
+        <p><strong>Company Website:</strong> <a :href="record.company.website" target="_blank">{{ record.company.website }}</a></p>
+      
+      </div>
     </template>
   </a-table>
  <!-- Delete Confirmation Modal -->
@@ -52,6 +62,11 @@ export default defineComponent({
       isEditModalVisible: false, // Controls visibility of the edit modal
       isDeleteModalVisible: false, // Controls visibility of the delete confirmation modal
       companyToDelete: null, // Store company data for deletion
+      expandableConfig: {
+        expandedRowRender: (record) => {
+          return this.$slots.expandedRowRender({ record });
+        },
+      },
     };
   },
   methods: {

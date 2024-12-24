@@ -15,7 +15,7 @@
       <a :href="record.website" target="_blank">{{ record.website }}</a>
     </template>
     <template #action="{ record }">
-      <a-button @click="$emit('edit-company', record)">Edit</a-button>
+      <a-button type="primary" @click="$emit('edit-company', record)">Edit</a-button>
       <a-button type="danger" @click="confirmDelete(record)">Delete</a-button>
     </template>
   </a-table>

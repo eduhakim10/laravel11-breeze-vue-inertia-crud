@@ -17,6 +17,7 @@ class EmployeeCreated extends Notification
     public function __construct()
     {
         //
+        $this->employee = $employee;
     }
 
     /**
@@ -40,7 +41,7 @@ class EmployeeCreated extends Notification
                     ->line('Email: ' . $this->employee->email)
                     ->line('Phone: ' . $this->employee->phone)
                     ->action('View Employee', url('/employees/' . $this->employee->id))
-                    ->line('Thank you for using our application!');
+                    ->line('Thank you');
     }
 
     /**

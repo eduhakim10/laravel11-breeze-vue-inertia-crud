@@ -135,7 +135,7 @@ const submitForm = () => {
       <!-- Submit Button -->
              <div class="flex justify-between">
           <Link
-            :href="route('companies.index')"
+            :href="route('employees.index')"
             class="py-2 px-4 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700"
           >
             Back
