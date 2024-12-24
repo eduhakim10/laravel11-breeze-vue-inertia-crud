@@ -9,6 +9,7 @@ import axios from 'axios'; // Import axios for making HTTP requests
 
 // Define data and properties
 const employees = ref([]); // Data to store the list of Employees
+
 const loading = ref(false); // Loading state for the table
 const pagination = ref({ current: 1, pageSize: 10, total: 0 }); // Pagination settings
 const formErrors = ref({}); 
@@ -21,19 +22,22 @@ const editFormData = ref({
   phone: '',
   company_id: '',
 });
-
-
 const { props } = usePage(); // Get page props
-console.log(props.flash?.success || null);
+const companies = props.companies || []; // Fetch companies from props
 const successMessage = props.flash?.success || null; // Access the success flash message
-// Handle edit button click
 
+// Handle edit button click
 const handleEditEmployee = (record) => {
 
-editFormData.value = { ...record }; // Copy data into the form
-isEditModalVisible.value = true; // Show the modal
-console.log(isEditModalVisible)
+  editFormData.value = { ...record,
+  company_id: record.company?.id || null
+  }; // Copy data into the form
+  isEditModalVisible.value = true; // Show the modal
 
+};
+// Close the edit modal
+const cancelEdit = () => {
+  isEditModalVisible.value = false;
 };
 const fetchEmployees = async (paginationData = pagination.value) => {
   loading.value = true;
@@ -58,6 +62,45 @@ const fetchEmployees = async (paginationData = pagination.value) => {
   } finally {
     loading.value = false;
   }
+};
+const saveEdit = async () => {
+
+// Append other fields to the FormData object
+    if (!editFormData.value) {
+       
+        return; // Stop further execution if there's an issue
+    }
+    console.log("Edit Form Data:", editFormData.value);
+    const formData = {
+    first_name: editFormData.value.first_name,
+    last_name: editFormData.value.last_name,
+    email: editFormData.value.email,
+    phone: editFormData.value.phone,
+    company_id: editFormData.value.company_id,
+  };
+
+
+  // Send the PUT request to update the company
+  try {
+      const response = await axios.put(`/employees/${editFormData.value.id}`, formData);
+
+      successMessage.value = response.data.message;
+      console.log('Backend response:', response);
+      console.log(response.data.message);
+      // Close the modal after successful update
+      isEditModalVisible.value = false;
+      fetchEmployees();
+  } catch (error) {
+    
+        if (error.response && error.response.data && error.response.data.errors) {
+          formErrors.value = error.response.data.errors;
+        } else {
+          console.error('Unexpected error');
+          isEditModalVisible.value = false;
+          fetchEmployees();
+        }
+  }
+ 
 };
 const closeMessage = () => {
   successMessage.value = null; // Clear the success message

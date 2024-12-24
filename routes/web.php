@@ -43,7 +43,7 @@ Route::middleware([RestrictUserMiddleware::class])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::get('/employees/create', [EmployeeController::class, 'create'])->name('employees.create');
-    Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('employees.update');
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
 
     //datatables api

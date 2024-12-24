@@ -74,7 +74,7 @@ export default defineComponent({
     async deleteCompany(company) {
 
       try {
-        await axios.delete(`/companies/${company.id}`);
+        await axios.delete(`/employees/${company.id}`);
         this.$emit('update-pagination'); // Notify the parent to refresh the data
       } catch (error) {
         console.error('Failed to delete company:', error);

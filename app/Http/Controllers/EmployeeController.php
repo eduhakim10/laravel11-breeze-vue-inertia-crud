@@ -47,20 +47,20 @@ class EmployeeController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(StoreEmployeeRequest $request)
-{
-   
+    {
+    
 
-    try {
-        $validatedData = $request->validated();  
-        Employee::create($validatedData);
+        try {
+            $validatedData = $request->validated();  
+            Employee::create($validatedData);
 
-        // Redirect to the index page with a success message
-        return redirect()->route('employees.index')->with('success', 'Employee created successfully!');
-    } catch (\Exception $e) {
-        // Return error back to Inertia
-        return back()->withErrors(['general_error' => 'An error occurred while creating the employee.']);
+            // Redirect to the index page with a success message
+            return redirect()->route('employees.index')->with('success', 'Employee created successfully!');
+        } catch (\Exception $e) {
+            // Return error back to Inertia
+            return back()->withErrors(['general_error' => 'An error occurred while creating the employee.']);
+        }
     }
-}
 
 
     /**
@@ -96,10 +96,10 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'Employee not found.'], 404);
         }
         $validated= $request->validated(); 
-
+        $employees->update($validated);
         return response()->json([
-            'message' => 'Company updated successfully.',
-            'company' => $employees, // Return the updated company data
+            'message' => 'Employee updated successfully.',
+            'employees' => $employees, // Return the updated company data
         ]);
     }
 
